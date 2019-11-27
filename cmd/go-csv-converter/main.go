@@ -2,7 +2,7 @@ package main
 
 import (
 	"encoding/csv"
-	"go-csv-converter/processors"
+	"go-csv-converter/processor"
 	"io/ioutil"
 	"log"
 	"strings"
@@ -36,7 +36,7 @@ func main() {
 		log.Fatal(err)
 	}
 
-	p := &processors.FileProcessor{
+	p := &processor.File{
 		Filename:   "sales_with_headers.csv",
 		Rows:       records,
 		Mappings:   entities,
