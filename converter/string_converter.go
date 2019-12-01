@@ -1,6 +1,8 @@
 package converter
 
-import "strings"
+import (
+	"strings"
+)
 
 // String cleans up a string
 type String struct {
@@ -15,14 +17,14 @@ func (s *String) Run() interface{} {
 
 // Data returns the data to be converted
 func (s *String) data() interface{} {
-	d := strings.Trim(s.RawData, " ")
+	s.RawData = strings.Trim(s.RawData, " ")
 
 	if !s.isEmpty() {
-		return d
+		return s.RawData
 	}
 
 	m, ok := s.Options.(map[interface{}]interface{})
-	if ok && m["default"] == nil {
+	if m == nil || (ok && m["default"] == "") {
 		return s.zeroValue()
 	}
 
