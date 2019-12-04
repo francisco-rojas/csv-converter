@@ -1,6 +1,7 @@
 package converter
 
 import (
+	"go-csv-converter/utils"
 	"strings"
 )
 
@@ -24,7 +25,11 @@ func (s *String) data() interface{} {
 	}
 
 	m, ok := s.Options.(map[interface{}]interface{})
-	if m == nil || (ok && m["default"] == "") {
+	if !ok {
+		return s.zeroValue()
+	}
+
+	if m["default"] == nil {
 		return s.zeroValue()
 	}
 
@@ -32,7 +37,21 @@ func (s *String) data() interface{} {
 }
 
 func (s *String) isEmpty() bool {
-	return s.RawData == ""
+	if s.RawData == "" {
+		return true
+	}
+
+	m, ok := s.Options.(map[interface{}]interface{})
+	if !ok {
+		return s.RawData == ""
+	}
+
+	v, ok := m["empty_values"].([]string)
+	if !ok {
+		return s.RawData == ""
+	}
+
+	return utils.InArray(s.RawData, v)
 }
 
 func (s *String) zeroValue() interface{} {

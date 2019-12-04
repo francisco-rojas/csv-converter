@@ -9,3 +9,14 @@ func Index(c []string, t string) int {
 	}
 	return -1
 }
+
+// InArray checks if s is in the a array
+func InArray(s string, a []string) bool {
+	for _, v := range a {
+		if v == s {
+			return true
+		}
+	}
+
+	return false
+}

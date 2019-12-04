@@ -107,6 +107,27 @@ func TestString_data(t *testing.T) {
 			},
 			want: "Lorem2",
 		},
+		{
+			name: "when empty values provided",
+			fields: fields{
+				RawData: "N/A",
+				Options: map[interface{}]interface{}{
+					"empty_values": []string{"N/A", "n/a"},
+				},
+			},
+			want: "",
+		},
+		{
+			name: "when empty values provided and default values provided",
+			fields: fields{
+				RawData: "N/A",
+				Options: map[interface{}]interface{}{
+					"empty_values": []string{"N/A", "n/a"},
+					"default":      "Lorem2",
+				},
+			},
+			want: "Lorem2",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -114,8 +135,7 @@ func TestString_data(t *testing.T) {
 				RawData: tt.fields.RawData,
 				Options: tt.fields.Options,
 			}
-			d := s.data()
-			assert.Equal(t, tt.want, d)
+			assert.Equal(t, tt.want, s.data())
 		})
 	}
 }
