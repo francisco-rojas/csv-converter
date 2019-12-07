@@ -7,9 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// EXTERNAL TESTS
-
-// INTERNAL TESTS
 func TestAttribute_converterFor(t *testing.T) {
 	type fields struct {
 		Row        []string
@@ -40,19 +37,6 @@ func TestAttribute_converterFor(t *testing.T) {
 			args: args{"string"},
 			want: &converter.String{RawData: "Doe", Options: map[string]string{}},
 		},
-		{
-			name: "when invalid converter provided",
-			fields: fields{
-				Row:     []string{"John", "Doe"},
-				Options: map[string]string{},
-				Mappings: map[interface{}]interface{}{
-					"header":     1,
-					"converters": map[interface{}]interface{}{},
-				},
-			},
-			args: args{"invalid"},
-			want: nil,
-		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -64,7 +48,7 @@ func TestAttribute_converterFor(t *testing.T) {
 				Headers:    tt.fields.Headers,
 			}
 
-			v, _ := ap.converterFor(tt.args.c)
+			v := ap.converterFor(tt.args.c)
 			assert.Equal(t, tt.want, v)
 		})
 	}
@@ -85,21 +69,7 @@ func TestAttribute_converterForErrors(t *testing.T) {
 		name   string
 		fields fields
 		args   args
-		want   error
 	}{
-		{
-			name: "when string converter provided",
-			fields: fields{
-				Row:     []string{"John", "Doe"},
-				Options: map[string]string{},
-				Mappings: map[interface{}]interface{}{
-					"header":     1,
-					"converters": map[interface{}]interface{}{},
-				},
-			},
-			args: args{"string"},
-			want: nil,
-		},
 		{
 			name: "when invalid converter provided",
 			fields: fields{
@@ -111,7 +81,6 @@ func TestAttribute_converterForErrors(t *testing.T) {
 				},
 			},
 			args: args{"invalid"},
-			want: &converter.ErrInvalidConverter{Name: "invalid"},
 		},
 	}
 	for _, tt := range tests {
@@ -124,8 +93,7 @@ func TestAttribute_converterForErrors(t *testing.T) {
 				Headers:    tt.fields.Headers,
 			}
 
-			_, err := ap.converterFor(tt.args.c)
-			assert.Equal(t, tt.want, err)
+			assert.PanicsWithValue(t, converter.ErrInvalidConverter{Name: tt.args.c}, func() { ap.converterFor(tt.args.c) })
 		})
 	}
 }

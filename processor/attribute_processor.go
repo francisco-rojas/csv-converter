@@ -24,13 +24,13 @@ func (ap *Attribute) ProcessAttribute() interface{} {
 
 	var d interface{}
 	for conv, opts := range m {
-		d, _ = ap.invokeConverter(conv.(string), opts)
+		d = ap.invokeConverter(conv.(string), opts)
 	}
 
 	return d
 }
 
-func (ap *Attribute) invokeConverter(c string, opts interface{}) (interface{}, error) {
+func (ap *Attribute) invokeConverter(c string, opts interface{}) interface{} {
 	o, ok := opts.(map[interface{}]interface{})
 	if ok {
 		for k, v := range o {
@@ -38,12 +38,7 @@ func (ap *Attribute) invokeConverter(c string, opts interface{}) (interface{}, e
 		}
 	}
 
-	e, err := ap.converterFor(c)
-	if err != nil {
-		return nil, err
-	}
-
-	return e.Run(), nil
+	return ap.converterFor(c).Run()
 }
 
 func (ap *Attribute) data() string {
@@ -64,7 +59,7 @@ func (ap *Attribute) data() string {
 	return ap.Row[i]
 }
 
-func (ap *Attribute) converterFor(c string) (converter.Converter, error) {
+func (ap *Attribute) converterFor(c string) converter.Converter {
 	a := map[string]converter.Converter{
 		"string": &converter.String{RawData: ap.data(), Options: ap.Options},
 		// "boolean":   &converter.String{RawData: ap.data(), Options: ap.Options},
@@ -77,8 +72,8 @@ func (ap *Attribute) converterFor(c string) (converter.Converter, error) {
 
 	conv := a[c]
 	if conv == nil {
-		return nil, &converter.ErrInvalidConverter{Name: c}
+		panic(converter.ErrInvalidConverter{Name: c})
 	}
 
-	return a[c], nil
+	return a[c]
 }
