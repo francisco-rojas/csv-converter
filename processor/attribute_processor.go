@@ -24,13 +24,13 @@ func (ap *Attribute) ProcessAttribute() interface{} {
 
 	var d interface{}
 	for conv, opts := range m {
-		d = ap.invokeConverter(conv.(string), opts)
+		d, _ = ap.invokeConverter(conv.(string), opts)
 	}
 
 	return d
 }
 
-func (ap *Attribute) invokeConverter(c string, opts interface{}) interface{} {
+func (ap *Attribute) invokeConverter(c string, opts interface{}) (interface{}, error) {
 	o, ok := opts.(map[interface{}]interface{})
 	if ok {
 		for k, v := range o {
@@ -38,7 +38,12 @@ func (ap *Attribute) invokeConverter(c string, opts interface{}) interface{} {
 		}
 	}
 
-	return ap.Converter(c).Run()
+	e, err := ap.converterFor(c)
+	if err != nil {
+		return nil, err
+	}
+
+	return e.Run(), nil
 }
 
 func (ap *Attribute) data() string {
@@ -52,20 +57,28 @@ func (ap *Attribute) data() string {
 		i = ap.Mappings["header"].(int)
 	}
 
+	if i == -1 || i >= len(ap.Row) {
+		panic(converter.ErrInvalidColumn{Header: ap.Mappings["header"]})
+	}
+
 	return ap.Row[i]
 }
 
-// Converter returns the converter for t
-func (ap *Attribute) Converter(t string) converter.Converter {
+func (ap *Attribute) converterFor(c string) (converter.Converter, error) {
 	a := map[string]converter.Converter{
-		"string":    &converter.String{RawData: ap.data(), Options: ap.Options},
-		"boolean":   &converter.String{RawData: ap.data(), Options: ap.Options},
-		"uppercase": &converter.String{RawData: ap.data(), Options: ap.Options},
-		"date":      &converter.String{RawData: ap.data(), Options: ap.Options},
-		"integer":   &converter.String{RawData: ap.data(), Options: ap.Options},
-		"decimal":   &converter.String{RawData: ap.data(), Options: ap.Options},
-		"float":     &converter.String{RawData: ap.data(), Options: ap.Options},
+		"string": &converter.String{RawData: ap.data(), Options: ap.Options},
+		// "boolean":   &converter.String{RawData: ap.data(), Options: ap.Options},
+		// "uppercase": &converter.String{RawData: ap.data(), Options: ap.Options},
+		// "date":      &converter.String{RawData: ap.data(), Options: ap.Options},
+		// "integer":   &converter.String{RawData: ap.data(), Options: ap.Options},
+		// "decimal":   &converter.String{RawData: ap.data(), Options: ap.Options},
+		// "float":     &converter.String{RawData: ap.data(), Options: ap.Options},
 	}
 
-	return a[t]
+	conv := a[c]
+	if conv == nil {
+		return nil, &converter.ErrInvalidConverter{Name: c}
+	}
+
+	return a[c], nil
 }
