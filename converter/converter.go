@@ -27,3 +27,12 @@ type ErrInvalidColumn struct {
 func (e *ErrInvalidColumn) Error() string {
 	return fmt.Sprintf("there is no column '%v' in the file", e.Header)
 }
+
+// ErrNoSeparatorProvided is raised when no separator is provided for splitting nested csv strings
+type ErrNoSeparatorProvided struct {
+	Name string
+}
+
+func (e *ErrNoSeparatorProvided) Error() string {
+	return fmt.Sprintf("No separator was providing for the nested entity '%s'", e.Name)
+}

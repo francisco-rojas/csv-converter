@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"go-csv-converter/converter"
 	"go-csv-converter/utils"
 	"strings"
 )
@@ -39,13 +40,26 @@ func (ep *Entity) ProcessEntity() map[string]interface{} {
 }
 
 func (ep *Entity) nestedEntity() map[string]interface{} {
-	s := ep.Mappings["separator"].(string)
-	if s == "" {
-		s = ","
+	s, ok := ep.Mappings["separator"].(string)
+
+	var i int
+	h, hok := ep.Mappings["header"].(string)
+	// column header
+	if hok {
+		i = utils.Index(ep.Headers, h)
+	} else {
+		// column position
+		i = ep.Mappings["header"].(int)
 	}
 
-	h := ep.Mappings["header"].(string)
-	i := utils.Index(ep.Headers, h)
+	if !ok {
+		panic(converter.ErrNoSeparatorProvided{Name: h})
+	}
+
+	if i == -1 || i >= len(ep.Row) {
+		panic(converter.ErrInvalidColumn{Header: ep.Mappings["header"]})
+	}
+
 	nr := ep.Row[i]
 	r := strings.Split(nr, s)
 

@@ -75,5 +75,5 @@ func (ap *Attribute) converterFor(c string) converter.Converter {
 		panic(converter.ErrInvalidConverter{Name: c})
 	}
 
-	return a[c]
+	return conv
 }
