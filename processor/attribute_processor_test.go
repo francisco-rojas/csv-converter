@@ -213,3 +213,117 @@ func TestAttribute_dataErrors(t *testing.T) {
 		})
 	}
 }
+
+func TestAttribute_invokeConverter(t *testing.T) {
+	type fields struct {
+		Row        []string
+		Options    map[string]string
+		Mappings   map[interface{}]interface{}
+		HasHeaders bool
+		Headers    []string
+	}
+	type args struct {
+		c    string
+		opts interface{}
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   interface{}
+	}{
+		{
+			name: "when string converter provided",
+			fields: fields{
+				Row:     []string{"John", "Doe"},
+				Options: map[string]string{},
+				Mappings: map[interface{}]interface{}{
+					"header": "Last Name",
+					"converters": map[interface{}]interface{}{
+						"string": nil,
+					},
+				},
+				HasHeaders: true,
+				Headers:    []string{"First Name", "Last Name"},
+			},
+			args: args{
+				c:    "string",
+				opts: map[interface{}]interface{}{},
+			},
+			want: "Doe",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ap := &Attribute{
+				Row:        tt.fields.Row,
+				Options:    tt.fields.Options,
+				Mappings:   tt.fields.Mappings,
+				HasHeaders: tt.fields.HasHeaders,
+				Headers:    tt.fields.Headers,
+			}
+			assert.Equal(t, tt.want, ap.invokeConverter(tt.args.c, tt.args.opts))
+		})
+	}
+}
+
+func TestAttribute_ProcessAttribute(t *testing.T) {
+	type fields struct {
+		Row        []string
+		Options    map[string]string
+		Mappings   map[interface{}]interface{}
+		HasHeaders bool
+		Headers    []string
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   interface{}
+	}{
+		{
+			name: "processes a string attribute",
+			fields: fields{
+				Row:     []string{"John", "Doe"},
+				Options: map[string]string{},
+				Mappings: map[interface{}]interface{}{
+					"header": "Last Name",
+					"converters": map[interface{}]interface{}{
+						"string": nil,
+					},
+				},
+				HasHeaders: true,
+				Headers:    []string{"First Name", "Last Name"},
+			},
+			want: "Doe",
+		},
+		{
+			name: "trims spaces from a string attribute",
+			fields: fields{
+				Row:     []string{"John", "   Doe   "},
+				Options: map[string]string{},
+				Mappings: map[interface{}]interface{}{
+					"header": "Last Name",
+					"converters": map[interface{}]interface{}{
+						"string": nil,
+					},
+				},
+				HasHeaders: true,
+				Headers:    []string{"First Name", "Last Name"},
+			},
+			want: "Doe",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ap := &Attribute{
+				Row:        tt.fields.Row,
+				Options:    tt.fields.Options,
+				Mappings:   tt.fields.Mappings,
+				HasHeaders: tt.fields.HasHeaders,
+				Headers:    tt.fields.Headers,
+			}
+
+			assert.Equal(t, tt.want, ap.ProcessAttribute())
+		})
+	}
+}
